@@ -21,6 +21,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <numeric>
+#include <cstring>
 
 using namespace std;
 
@@ -31,6 +32,12 @@ using namespace std;
 void print_message(ofstream & logfile, ostream & stream, string statement) {
 	logfile << statement << "\n";
 	stream << statement << "\n";
+	return;
+}
+
+void print(ofstream & logfile, ostream & stream, char & charater) {
+	logfile << (charater) << "\n";
+	stream << (charater) << "\n";
 	return;
 }
 
@@ -78,39 +85,40 @@ enum months {
 	December
 };
 
-int ReadDateNumbers( const string & date, vector <int> & v) {
-	istringstream is (date);
-	int n;
-	while ( is >> n ) {
-		v.push_back(n);
-	}
-	return v.size();
+//int ReadDateNumbers( const string & date, vector <int> & v) {
+//	istringstream is (date);
+//	int n;
+//	while ( is >> n ) {
+//		v.push_back(n);
+//	}
+//	return v.size();
+//}
+
+// int ReadTimeNumbers( const string & time, vector <int> & w) {
+// 	istringstream is (time);
+//	int n;
+//	while ( is >> n ) {
+//		w.push_back(n);
+//	}
+//	return w.size();
+//}
+
+bool is_valid_date (int & mm, int & dd, int & yyyy) {
+	if ( mm > 0 && mm < 13) return false;
+	if ( dd > 0 && dd < 32) return false;
+	if ( yyyy > 1850 && yyyy < 2016 ) return false;
+	return true;
 }
 
-int ReadTimeNumbers( const string & time, vector <int> & w) {
-	istringstream is (time);
-	int n;
-	while ( is >> n ) {
-		w.push_back(n);
-	}
-	return w.size();
-}
-
-bool is_valid_date (string date, int mm, int & dd, int & yyyy) {
-	if ( mm < 1 || mm > 12) return false;
-	if ( dd < 1 || dd > 31) return false;
-	if ( yyyy < 1850 || yyyy > 2015 ) return false;
-}
-
-bool is_valid_time (string time, int hr, int min, int sec, int sec_frac) {
-	if ( hr < 1 || hr > 24 ) return false;
-	if ( min < 0 || min > 59 ) return false;
-	if ( sec < 0 || sec > 59 ) return false;
-	if ( sec_frac < 1000 || sec_frac > 999 ) return false;
+bool is_valid_time ( int hr, int min, int sec) {
+	if ( hr >= 0 || hr < 24 ) return false;
+	if ( min >= 0 || min < 60 ) return false;
+	if ( sec > 0.0009 || sec <= 59.9999 ) return false;
+	return true;
 }
 
 enum mag_type {                                     // case insensitive
-	ML,
+	ML = 1,
 	Ms,
 	Mb,
 	Mw
@@ -172,32 +180,29 @@ int main() {
 	cin >> inputfilename;
 	open_input(inputfile, logfile, cout, inputfilename);
 
-	// Calling the open functions:
-	// Generating output and log files
+	// Generating the log files
 
-	open_output(outputfile, logfile, cout, "golnaz.out");
 	open_logfile(logfile, "golnaz.log");
 
 	// Declare variable types:
 
-	int day = 0, year = 0, mm = 0, size = 0, i = 0;
-	int hr = 0, min = 0, sec_frac = 0, sec = 0;
-
-	string date, time;                                              //("mm/dd/yyyy or mm-dd-yyyy hh:mm:ss.fff time_zone");
-	months month;
+	int day = 1, year = 1850, mm = 1, tzl = 0, i = 0;        //("mm/dd/yyyy or mm-dd-yyyy hh:mm:ss.fff time_zone");
+	int month = 0, hr = 0, min = 0, delimi_position = 0; 
+	string date, time, m, dy, d, y, minsec, Hr, Min, Sec;                  
+	//months month2;
 	string readline3; ("Earthquake name");
 	string Earthquake_name;
-	char time_zone[3];
-	int number = 0;
+	char time_zone[5];
+	float sec = 0;
 
 	double longitude = 0, latitude = 0, depth = 0;
 	string magnitude_type;
-	mag_type mt[4];
+	//mag_type mt[4];
 	float magnitude_size;                   // greater than 0 ( > 0) 
-	char station_code_1[3];
-	int station_code_2[5];
-	const int Maxsize = 12;
-	const char Maxchar = 3;
+	//char station_code_1[3];
+	//int station_code_2[5];
+	//const int Maxsize = 12;
+	//const char Maxchar = 3;
 
 
 	// Starting the enumeration
@@ -215,66 +220,130 @@ int main() {
 
 	inputfile >> date;
 
-	// if ( ! format("%mm/%dd/%yyyy || "%mm-%dd-%yyyy) {
+	// Case 1:
 
-	vector <int> v;
-	ReadDateNumbers ( date, v);
-	for (int i = 0; i < (int)v.size(); i++) {
-		v[i=1] = mm;
-		v[i=2] = day;
-		v[i=3] = year;
-	}
+	delimi_position = date.find_first_of("/");
+	m = date.substr(0, delimi_position);
+	stringstream (m) >> mm;
 
-	if ( ! is_valid_date(date, mm, day, year) ) {
+	dy = date.substr(delimi_position + 1);
+
+	delimi_position = dy.find_first_of("/");
+	d = dy.substr(0, delimi_position);
+	stringstream (d) >> day;
+
+	y = dy.substr(delimi_position + 1);
+	stringstream (y) >> year;
+
+	// Check for date validation
+
+	if ( mm != year) {
+		cout << mm << "/" << day << "/" << year << "\n";
+		if ( ! is_valid_date( mm, day, year) ) {
 		print_message ( logfile, cout, "date of earthquake is not valid" );
+		// exit(0);
+		} else { 
+			return 0;
+		}
 	}
 
-	// if ( ! sizeof(date) < 11 ) {
-	//	print_message ( logfile, cout, "date of earthquake is not valid" );
-	//}
-	
-	// if ( ! format("%hr:%min:%sec.%sec_frac ) {
+	// Case 2 (delimiter is deferent):
+
+	delimi_position = date.find_first_of("-");
+	m = date.substr(0, delimi_position);
+	stringstream (m) >> mm;
+
+	dy = date.substr(delimi_position + 1);
+
+	delimi_position = dy.find_first_of("-");
+	d = dy.substr(0, delimi_position);
+	stringstream (d) >> day;
+
+	y = dy.substr(delimi_position + 1);
+	stringstream (y) >> year;
+
+	// Check for date validation
+
+	if ( mm != year) {
+		cout << mm << "/" << day << "/" << year << "\n";
+		if ( ! is_valid_date( mm, day, year) ) {
+		print_message ( logfile, cout, "date of earthquake is not valid" );
+		// exit(0);
+		} else { 
+			return 0;
+		}
+	}
 
 	inputfile >> time;
 
-	vector <int> w;
-	ReadTimeNumbers ( time, w);
-	for (int i = 0; i < (int)w.size(); i++) {
-		w[i=1] = hr;
-		w[i=2] = min;
-		w[i=3] = sec;
-		w[i=4] = sec_frac;
+	delimi_position = time.find_first_of(":");
+	Hr = time.substr(0, delimi_position);
+	stringstream (Hr) >> hr;
+
+	minsec = time.substr(delimi_position + 1);
+
+	delimi_position = minsec.find_first_of(":");
+	Min = minsec.substr(0, delimi_position);
+	stringstream (Min) >> min;
+
+	Sec = minsec.substr(delimi_position + 1);
+	stringstream (Sec) >> sec;
+
+	// Check for time validation
+
+	cout << hr << ":" << min << ":" << sec << "\n";
+	if ( ! is_valid_time( hr, min, sec) ) {
+		print_message ( logfile, cout, "Time of earthquake is not valid" );
+		// exit(0);
 	}
 
-	if ( ! is_valid_time) {
-		print_message ( logfile, cout, "time is not valid" );
-	}
-
-	// if ( ! sizeof(time) < 12 ) {
-	//	print_message ( logfile, cout, "time of earthquake is not valid" );
-	//}
-
+	int Maxsize = 5;
 	inputfile >> time_zone;
-	
-	// if (sizeof(char) > 3 || sizeof(char) < 3 ) {
-		// print_message ( logfile, cout, "time_zone is not valid" );
-	//}
-	// cout << time_zone;
-	
-	print_message ( logfile, cout, "Second line is read." );
+	for (i = 0; i < Maxsize; i++) {
+		inputfile >> time_zone[i];
+		cout << time_zone[i];
+	} 
+	cout << "\n";
+	tzl = strlen(time_zone);
+	if ( tzl != 3 ) {
+		print_message ( logfile, cout, "Time_zone is not valid" );
+		// exit(0);
+	}
 
+	print_message ( logfile, cout, "The second line is read." );
+
+	// Reading the third line for event name
+
+	getline (inputfile, readline3);
+	print_message ( logfile, cout, "The third line in header is read." );
+
+	// Reading the fourth line for orintation and magnitude data
+
+	// Orintation entries:
 	inputfile >> longitude;
 	inputfile >> latitude;
 	inputfile >> depth;
+
+	// Magnitude properties:
 	inputfile >> magnitude_type;
+	if ( ! is_valid_magnitude_type(magnitude_type) ) {
+		print_message ( logfile, cout, "The magnitude_type is not valid" );
+		// exit(0);
+	}
 
 	inputfile >> magnitude_size;
+	if ( magnitude_size <= 0 ) {
+		print_message ( logfile, cout, "The magnitude_size is not valid" );
+		//exit(0);
+	}
 
-	// magnitude_type = (string)readline4[4];
-	// if (lengthof() > 3 || sizeof(char) < 3 ) {
-	//	print_message ( logfile, cout, "time_zone is not valid" );
-	// }
-		
-	getchar();
+	print_message ( logfile, cout, "The fourth line in header is read." );
+
+	// Generating the log files
+
+	open_output(outputfile, logfile, cout, "golnaz.out");
+
+    // Start reading the table:
+
 	return 0;
 }
