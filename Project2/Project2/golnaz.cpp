@@ -19,6 +19,8 @@
 #include <istream>
 #include <stdio.h>
 #include <vector>
+#include <stdlib.h>
+#include <numeric>
 
 using namespace std;
 
@@ -78,33 +80,33 @@ enum months {
 
 int ReadDateNumbers( const string & date, vector <int> & v) {
 	istringstream is (date);
-	int mm, dd, yyyy, n, i;
+	int n;
 	while ( is >> n ) {
 		v.push_back(n);
 	}
 	return v.size();
 }
 
-int ReadTimeNumbers( const string & time, vector <int> & v) {
+int ReadTimeNumbers( const string & time, vector <int> & w) {
 	istringstream is (time);
-	int hr, min, sec, sec_frac, n;
+	int n;
 	while ( is >> n ) {
-		v.push_back(n);
+		w.push_back(n);
 	}
-	return v.size();
+	return w.size();
 }
 
-bool is_valid_date (ofstream logfile, string date, months mm, int & dd, int & yyyy) {
+bool is_valid_date (string date, int mm, int & dd, int & yyyy) {
 	if ( mm < 1 || mm > 12) return false;
 	if ( dd < 1 || dd > 31) return false;
 	if ( yyyy < 1850 || yyyy > 2015 ) return false;
 }
 
-bool is_valid_time (ofstream logfile, string time, int hr, int min, int sec, int sec_frac) {
-			if ( hr < 1 || hr > 24 ) return false;
-			if ( min < 0 || min > 59 ) return false;
-			if ( sec < 0 || sec > 59 ) return false;
-			if ( sec_frac < 1000 || sec_frac > 999 ) return false;
+bool is_valid_time (string time, int hr, int min, int sec, int sec_frac) {
+	if ( hr < 1 || hr > 24 ) return false;
+	if ( min < 0 || min > 59 ) return false;
+	if ( sec < 0 || sec > 59 ) return false;
+	if ( sec_frac < 1000 || sec_frac > 999 ) return false;
 }
 
 enum mag_type {                                     // case insensitive
@@ -114,6 +116,20 @@ enum mag_type {                                     // case insensitive
 	Mw
 };
 
+// Function for convertine a string to uppercase and check for validation 
+
+string uppercase (string & s) {
+    string result = s;
+    for (int i=0; i < (int)result.size(); i++)
+        result[i] = toupper(result[i]);
+    return result;
+}
+
+bool is_valid_magnitude_type (string magnitude_type) {
+	string ss = uppercase(magnitude_type);
+	return( (ss == "ML") || (ss == "MS") || (ss == "MB") || (ss == "MW") );
+}
+
 enum network_code {                                 // case sensitive
 	CE,
 	FA,
@@ -122,24 +138,21 @@ enum network_code {                                 // case sensitive
 };
 
 enum type_of_band {
-	ML,
-	Ms,
-	Mb,
-	Mw
+	L,
+	B,
+	H
 };
 
 enum type_of_instrument {
-	ML,
-	Ms,
-	Mb,
-	Mw
+	HG,
+	LG,
+	NA
 };
 
-enum orientation {
-	ML,
-	Ms,
-	Mb,
-	Mw
+enum orientation_1 {
+	N,
+	E,
+	Z
 };
 
 int main() {
@@ -167,7 +180,7 @@ int main() {
 
 	// Declare variable types:
 
-	int day = 0, year = 0, mm = 0;
+	int day = 0, year = 0, mm = 0, size = 0, i = 0;
 	int hr = 0, min = 0, sec_frac = 0, sec = 0;
 
 	string date, time;                                              //("mm/dd/yyyy or mm-dd-yyyy hh:mm:ss.fff time_zone");
@@ -179,11 +192,12 @@ int main() {
 
 	double longitude = 0, latitude = 0, depth = 0;
 	string magnitude_type;
-	mag_type mt;
-	float magnitude_size;                   // greater than 0 ( > 0)
+	mag_type mt[4];
+	float magnitude_size;                   // greater than 0 ( > 0) 
 	char station_code_1[3];
 	int station_code_2[5];
-
+	const int Maxsize = 12;
+	const char Maxchar = 3;
 
 
 	// Starting the enumeration
@@ -205,33 +219,43 @@ int main() {
 
 	vector <int> v;
 	ReadDateNumbers ( date, v);
-	for (int i = 0; i < v.size(); i++) {
-		mm = v[i=1];
-		day = v[i=2];
-		year = v[i=3];
+	for (int i = 0; i < (int)v.size(); i++) {
+		v[i=1] = mm;
+		v[i=2] = day;
+		v[i=3] = year;
 	}
 
-	if ( ! is_valid_date) {
+	if ( ! is_valid_date(date, mm, day, year) ) {
 		print_message ( logfile, cout, "date of earthquake is not valid" );
 	}
+
+	// if ( ! sizeof(date) < 11 ) {
+	//	print_message ( logfile, cout, "date of earthquake is not valid" );
+	//}
 	
 	// if ( ! format("%hr:%min:%sec.%sec_frac ) {
 
 	inputfile >> time;
 
-	ReadTimeNumbers ( date, v);
-	for (int i = 0; i < v.size(); i++) {
-		hr = v[i=1];
-		min = v[i=2];
-		sec = v[i=3];
-		sec_frac = v[i=4];
+	vector <int> w;
+	ReadTimeNumbers ( time, w);
+	for (int i = 0; i < (int)w.size(); i++) {
+		w[i=1] = hr;
+		w[i=2] = min;
+		w[i=3] = sec;
+		w[i=4] = sec_frac;
 	}
 
 	if ( ! is_valid_time) {
 		print_message ( logfile, cout, "time is not valid" );
 	}
 
-	inputfile >> time_zone;                                                                                                                                                                                                                                                                                                                                                       
+	// if ( ! sizeof(time) < 12 ) {
+	//	print_message ( logfile, cout, "time of earthquake is not valid" );
+	//}
+
+	inputfile >> time_zone;
+	
 	// if (sizeof(char) > 3 || sizeof(char) < 3 ) {
 		// print_message ( logfile, cout, "time_zone is not valid" );
 	//}
@@ -243,25 +267,14 @@ int main() {
 	inputfile >> latitude;
 	inputfile >> depth;
 	inputfile >> magnitude_type;
+
 	inputfile >> magnitude_size;
 
-
-
-	magnitude_type = (string)readline4[4];
-	if (sizeof() > 3 || sizeof(char) < 3 ) {
-		print_message ( logfile, cout, "time_zone is not valid" );
-	}
-
-		inputfile >> longitude;
-		inputfile >> latitude;
-		inputfile >> depth;
-
-		inputfile >> magnitude_type;
-		magnitude_type = 
-
-
-		inputfile >> magnitude_size;
-	
+	// magnitude_type = (string)readline4[4];
+	// if (lengthof() > 3 || sizeof(char) < 3 ) {
+	//	print_message ( logfile, cout, "time_zone is not valid" );
+	// }
+		
 	getchar();
 	return 0;
 }
