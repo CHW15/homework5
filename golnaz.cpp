@@ -4,8 +4,7 @@
 * February 28th, 2015
 * The repository address in github is:
 
-* This Program will check a collection reports of earthquake event from sesmic stations
-* using a arrays, enumerators, and structures. It creats an output file and a log file.
+* This Program 
 */
 
 // Calling external libraries
@@ -108,7 +107,7 @@ enum magnitude_type {                                     // case insensitive
 	Mw
 };
 
-enum Network_code {                                       // case sensitive
+enum Network_code {                                 // case sensitive
 	CE,
 	FA,
 	NP,
@@ -148,44 +147,43 @@ string Month_Num_to_namestring (Months aa) {
 	case November:  return "November";
 	case December:  return "December";
 	}
-	// It should never get here!!
 	exit(EXIT_FAILURE);
 }
 
 Months number_to_months (int a){
-
-	if (a == 1)  return January;
-	if (a == 2)  return February;
-	if (a == 3)  return March;
-	if (a == 4)  return April;
-	if (a == 5)  return May;
-	if (a == 6)  return June;
-	if (a == 7)  return July;
-	if (a == 8)  return August;
-	if (a == 9)  return September;
-	if (a == 10) return October;
-	if (a == 11) return November;
-	if (a == 12) return December;
-
-	// It should never get here!!
-	exit(EXIT_FAILURE);
+    
+    if (a == 1)  return January;
+    if (a == 2)  return February;
+    if (a == 3)  return March;
+    if (a == 4)  return April;
+    if (a == 5)  return May;
+    if (a == 6)  return June;
+    if (a == 7)  return July;
+    if (a == 8)  return August;
+    if (a == 9)  return September;
+    if (a == 10) return October;
+    if (a == 11) return November;
+    if (a == 12) return December;
+    
+    // It should never get here!!
+    exit(EXIT_FAILURE);
 }
 
 // Functions for input header inorder to check date and time validation 
 
 bool is_valid_date (int & mm, int & dd, int & yyyy) {
-	bool date_f=1;
-	if ( mm < 0 || mm > 13) {date_f=0;}
-	if ( dd < 0 || dd > 32) {date_f=0;}
-	if ( yyyy < 1850 || yyyy > 2016 ) {date_f=0;}
+    bool date_f=1;
+    if ( mm < 0 || mm > 13) {date_f=0;}
+    if ( dd < 0 || dd > 32) {date_f=0;}
+    if ( yyyy < 1850 || yyyy > 2016 ) {date_f=0;}
 	return date_f;
 }
 
 bool is_valid_time ( int hr, int min, int sec) {
-	bool time_f=1;
-	if ( hr < 0 || hr > 24 ) {time_f=0;}
-	if ( min < 0 || min > 60 ) {time_f=0;}
-	if ( sec < 0.0009 || sec > 59.9999 ) {time_f=0;}
+    bool time_f=1;
+    if ( hr < 0 || hr > 24 ) {time_f=0;}
+    if ( min < 0 || min > 60 ) {time_f=0;}
+    if ( sec < 0.0009 || sec > 59.9999 ) {time_f=0;}
 	return time_f;
 }
 
@@ -236,7 +234,9 @@ struct Satation_records {
 const int MAXSIZE = 300;
 
 // read the input -- pass back whether error or normal as result
-// stations' ID is in db
+// stations' name is in db (passed by reference because it is an array of strings)
+// also number of cars read is also passed back...
+/*
 bool read_input (string & logfilename,  Satation_records db[MAXSIZE], int & code, int entry_pos  ) {
 
 	string net_code;
@@ -275,26 +275,29 @@ bool read_input (string & logfilename,  Satation_records db[MAXSIZE], int & code
 			print_message ( logfile, cout, "Invalid_Network_code at position:" );
 			print_position(logfile, cout, entry_pos);
 		} 
-
+		
 		if ( !is_valid_Orientation (orientation) ) {
 			print_message ( logfile, cout, "Invalid_Network_code at position:" );
 			print_position(logfile, cout, entry_pos);
 		} else {
-			stringstream str1;
-			int orl;
-			str1 << orientation.substr(0);
-			str1 >> orl;
+            
+            stringstream str1;
+            
+            str1 << orientation.substr(0);
+            str1 >> orl;
+            
 			//int orl = orientation.substr(0);
 			if ( orl < 10000 || orl > 99999 ) {
 				print_message ( logfile, cout, "Invalid_Network_code at position:" );
 				print_position(logfile, cout, entry_pos);
 			}
 		}
+
 		code++;
 	}
 	return true;
 }
-
+*/
 int main() {
 
 	// Declare variable types:
@@ -309,7 +312,7 @@ int main() {
 	int hr = 0, min = 0, delimi_position = 0; 
 	string date, time, m, dy, d, y, minsec, Hr, Min, Sec;                  
 	Months month;
-
+   
 	string readline3;                                        // "Earthquake name"
 	string time_zone;
 	float  sec = 0;
@@ -317,8 +320,13 @@ int main() {
 
 	double longitude = 0, latitude = 0, depth = 0;
 	string magnitude_type;
+	//mag_type mt[4];
 	float magnitude_size;                                   // greater than 0 ( > 0) 
+	//char stati_code_ty1[3];
+	//int stati_code_ty2[5];
 	string station_code;
+	//const int Maxsize = 12;
+	//const char Maxchar = 3;
 
 	// Prompt the user for an input file
 
@@ -344,8 +352,11 @@ int main() {
 	delimi_position = date.find_first_of("/");
 	m = date.substr(0, delimi_position);
 	stringstream (m) >> mm;
+    
+    
 	month << mm;
 
+    
 	dy = date.substr(delimi_position + 1);
 
 	delimi_position = dy.find_first_of("/");
@@ -357,12 +368,16 @@ int main() {
 
 	// Check for date validation
 
-	if ( mm != year) {	
+    //cout << mm << "/" << day << "/" << year << "\n";
+    
+	if ( mm != year) {
+		
 		if (  is_valid_date( mm, day, year)==0 ) {
 			print_message ( logfile, cout, "date of earthquake is not valid" );
-			exit(0);
+        exit(0);
 		} else { cout << mm << "/" << day << "/" << year << "\n";}
-		//return 0;	
+			//return 0;
+		
 	}
 
 	// Case 2 (delimiter is deferent):
@@ -389,14 +404,16 @@ int main() {
 			if ( ! is_valid_date( mm, day, year) ) {
 				print_message ( logfile, cout, "Date of the earthquake is not valid" );
 				// exit(0);
-			} 
+			} else { 
+				
+			}
 		}
 	}
 
 	// Read time of the event
 
-	cout << "line 389" << "\n";
-
+   cout << "line 389" << "\n";
+    
 	inputfile >> time;
 
 	delimi_position = time.find_first_of(":");
@@ -430,14 +447,15 @@ int main() {
 	tzl = strlen(cstr);
 	if ( tzl != 3 ) {
 		print_message ( logfile, cout, "Time_zone is not valid" );
-		exit(0);
+		 exit(0);
 	}
 
 	// Reading the third line for event name
 
-	inputfile.ignore();
+    
+    inputfile.ignore();
 	getline (inputfile, readline3);
-
+    
 	// Reading the fourth line for orintation and magnitude data
 
 	// Orintation entries:
@@ -467,13 +485,15 @@ int main() {
 	open_output(outputfile, logfile, cout, "golnaz.out");
 
 	// Print the header in the outputfile:
+   
+    outputfile <<"# " <<  Month_Num_to_namestring (number_to_months(mm)) <<" "<< day << " " << year << " " << time << " " << time_zone << " " << magnitude_type << " " << magnitude_size
+    << " " << readline3 << " " << "[" << event_ID << "]" << "(" << longitude 	<< "," << " " << latitude << "," << " " << depth << ")" << "\n";
+    
 
-	outputfile << "# " <<  Month_Num_to_namestring (number_to_months(mm)) <<" "<< day << " " << year << " " << time << " " << time_zone << " " << magnitude_type << " " << magnitude_size
-		<< " " << readline3 << " " << "[" << event_ID << "]" << "(" << longitude 	<< "," << " " << latitude << "," << " " << depth << ")" << "\n";
 
-	// Calling the read_input function
+	// Start reading the table:
 
-	outputfile.close();
+    outputfile.close();
 
 	return 0;
 }
